@@ -1,0 +1,13 @@
+language: c
+
+compiler:
+  - gcc
+
+before_script:
+  - uname -a
+
+script:
+  - make clean all test
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

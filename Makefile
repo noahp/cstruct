@@ -1,7 +1,7 @@
 # cstruct Makefile
 
 INC = src
-CFLAGS += $(addprefix -I,$(INC)) -g -std=c99 -Wall -Wpedantic
+CFLAGS += $(addprefix -I,$(INC)) -g -std=c99 -Wall -Wpedantic -Werror
 LIBNAME = src/cstruct.o
 
 TEXT_RED = \033[31;1m
@@ -13,7 +13,7 @@ RED_TEXT = "$(TEXT_RED)$(1)$(TEXT_END)"
 GREEN_TEXT = "$(TEXT_GREEN)$(1)$(TEXT_END)"
 BLUE_TEXT = "$(TEXT_BLUE)$(1)$(TEXT_END)"
 
-all: lib test
+all: lib
 
 %.o: %.c
 	gcc -c $< $(CFLAGS) -o $@ -MMD
@@ -21,10 +21,12 @@ all: lib test
 lib: $(LIBNAME)
 	@echo $(call BLUE_TEXT,Built lib.)
 
+test: CFLAGS+= -coverage
 test: test/test.o lib
-	gcc -o test/test $< $(LIBNAME)
+	gcc -o test/test $< $(LIBNAME) $(CFLAGS)
 	@echo $(call BLUE_TEXT,Built test, running it.)
-	@./test/test && echo $(call GREEN_TEXT,Test passed.) || echo $(call RED_TEXT,Test failed)
+	@./test/test && echo $(call GREEN_TEXT,Tests passed.) || echo $(call RED_TEXT,Test failed)
+	gcov -o src src/cstruct.c
 
 clean:
 	- rm -rf **/*.o **/*.d test/test

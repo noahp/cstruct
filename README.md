@@ -63,3 +63,5 @@ Option:
 
 # why though
 Yeah, it's pretty dumb. Enjoy!
+
+Inspired by: https://github.com/bluekitchen/btstack/blob/master/src/hci_cmd.c#L58

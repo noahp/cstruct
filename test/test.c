@@ -71,10 +71,10 @@ int main(int argc, const char **argv) {
     UT_INT_EQUAL(6, packed);
     UT_MEM_EQUAL(test_case_1, sizeof(test_case_1) - 1, outbuf, packed);
 
-#define test_case_2 "\x34\x12\x78\x56\x34\x12"
-    packed = cstruct_packs(outbuf, sizeof(outbuf), "<hi", 0x1234, 0x12345678);
+#define test_case_2 "\x12\x34\x12\x34\x56\x78"
+    packed = cstruct_packs(outbuf, sizeof(outbuf), ">hi", 0x1234, 0x12345678);
     UT_INT_EQUAL(6, packed);
-    UT_MEM_EQUAL(test_case_0, sizeof(test_case_2) - 1, outbuf, packed);
+    UT_MEM_EQUAL(test_case_2, sizeof(test_case_2) - 1, outbuf, packed);
 
     return 0;
 }

@@ -29,4 +29,4 @@ test: test/test.o lib
 	gcov -o src src/cstruct.c
 
 clean:
-	- rm -rf **/*.o **/*.d test/test
+	- rm -rf **/*.o **/*.d **/*.gcda **/*.gcno *.gcov test/test

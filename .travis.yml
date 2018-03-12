@@ -3,14 +3,15 @@ language: c
 compiler:
   - gcc
 
-before install:
+install:
   - pip install --user cpp-coveralls
 
 before_script:
   - uname -a
 
 script:
-  - make clean all test
+  - make clean all
+  - make clean test
 
 after_success:
   # upload to codecov

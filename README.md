@@ -1,6 +1,6 @@
-[![Build Status](https://img.shields.io/travis/noahp/cstruct.svg)](https://travis-ci.org/noahp/cstruct)
-[![Codecov](https://img.shields.io/codecov/c/github/noahp/cstruct.svg)](https://codecov.io/gh/noahp/cstruct)
-[![C99](https://img.shields.io/badge/language-C99-blue.svg)](http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf)
+[![Build Status](https://img.shields.io/travis/noahp/cstruct.svg?style=for-the-badge)](https://travis-ci.org/noahp/cstruct)
+[![Codecov](https://img.shields.io/codecov/c/github/noahp/cstruct.svg?style=for-the-badge)](https://codecov.io/gh/noahp/cstruct)
+[![C99](https://img.shields.io/badge/language-C99-blue.svg?style=for-the-badge)](http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf)
 # 🚚 cstruct
 Manually pack structured data in c just like you always wanted to!
 

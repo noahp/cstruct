@@ -31,18 +31,15 @@ static void prv_print_hex(const char *prefix, const char *suffix, const char *bu
 
 static int prv_ut_mem_equal(const char *expected, size_t expected_len, const char *actual,
                             size_t actual_len, int line, const char *filename) {
-    if (expected_len != actual_len) {
-        return -1;
-    }
-
-    size_t i;
-    for (i = 0; i < expected_len; i++) {
-        if (expected[i] != actual[i]) {
-            break;
+    size_t i = ~expected_len;
+    if (expected_len == actual_len) {
+        for (i = 0; i < expected_len; i++) {
+            if (expected[i] != actual[i]) {
+                break;
+            }
         }
     }
-
-    if (i < expected_len) {
+    if (i != expected_len) {
         printf(TEXT_RED("%s:%d  memcmp mismatch"), filename, line);
         prv_print_hex(TEXT_RED_START "Expected: ", TEXT_END "\n", expected, expected_len);
         prv_print_hex(TEXT_RED_START "Actual:   ", TEXT_END "\n", actual, actual_len);
@@ -61,36 +58,57 @@ int main(int argc, const char **argv) {
     char outbuf[512];
     int packed = 0;
 
+// basic little-endian
 #define test_case_0 "\x34\x12\x78\x56\x34\x12"
     packed = cstruct_packs(outbuf, sizeof(outbuf), "<hi", 0x1234, 0x12345678);
     UT_INT_EQUAL(6, packed);
     UT_MEM_EQUAL(test_case_0, sizeof(test_case_0) - 1, outbuf, packed);
 
+// pad
 #define test_case_1 "\x34\x00\x78\x56\x34\x12"
     packed = cstruct_packs(outbuf, sizeof(outbuf), "<cxi", 0x34, 0x12345678);
     UT_INT_EQUAL(6, packed);
     UT_MEM_EQUAL(test_case_1, sizeof(test_case_1) - 1, outbuf, packed);
 
+// basic big-endian
 #define test_case_2 "\x12\x34\x12\x34\x56\x78"
     packed = cstruct_packs(outbuf, sizeof(outbuf), ">hi", 0x1234, 0x12345678);
     UT_INT_EQUAL(6, packed);
     UT_MEM_EQUAL(test_case_2, sizeof(test_case_2) - 1, outbuf, packed);
 
+// illegal character
     packed = cstruct_packs(outbuf, sizeof(outbuf), "^>hi", 0x1234, 0x12345678);
     UT_INT_EQUAL(-1, packed);
 
+// wrong number of input arguments
     packed = cstruct_packs(outbuf, sizeof(outbuf), "<hii", 0x1234, 0x12345678);
     UT_INT_EQUAL(-1, packed);
 
+// switch endian
 #define test_case_3 "\x12\x34\x56\x78\x9a\xbc\xde\xf0\x0f\xed\xcb\xa9\x87\x65\x43\x21"
-    packed = cstruct_packs(outbuf, sizeof(outbuf), ">l<l", 0x123456789abcdef0ULL, 0x21436587a9cbed0fULL);
+    packed =
+        cstruct_packs(outbuf, sizeof(outbuf), ">l<l", 0x123456789abcdef0ULL, 0x21436587a9cbed0fULL);
     UT_INT_EQUAL(16, packed);
     UT_MEM_EQUAL(test_case_3, sizeof(test_case_3) - 1, outbuf, packed);
 
-#define test_case_2 "\x12\x34\x12\x34\x56\x78"
-    packed = cstruct_packs(outbuf, sizeof(outbuf), ">hi", 0x1234, 0x12345678);
-    UT_INT_EQUAL(6, packed);
-    UT_MEM_EQUAL(test_case_2, sizeof(test_case_2) - 1, outbuf, packed);
+// arrays
+#define test_case_4                                                                                \
+    "\x31\x32\x33\x34\x35\x36\x01\x00\x02\x00\x03\x00\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00" \
+    "\x00\x04\x00\x00\x00\x05\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x00\x00" \
+    "\x00\x00"
+    short shortarray[3] = {1, 2, 3};
+    int intarray[5] = {1, 2, 3, 4, 5};
+    long long qarray[2] = {1, 2};
+    packed = cstruct_packs(outbuf, sizeof(outbuf), "2c4c3h5i2l", "12", "3456", shortarray, intarray,
+                           qarray);
+    UT_INT_EQUAL(48, packed);
+    UT_MEM_EQUAL(test_case_4, sizeof(test_case_4) - 1, outbuf, packed);
+
+// array only applies to attached element
+#define test_case_5 "\x12\x34\x54"
+    packed = cstruct_packs(outbuf, sizeof(outbuf), "2cc", "\x12\x34", 0x54);
+    UT_INT_EQUAL(3, packed);
+    UT_MEM_EQUAL(test_case_5, sizeof(test_case_5) - 1, outbuf, packed);
 
     return 0;
 }

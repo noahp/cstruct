@@ -20,6 +20,7 @@ static void *prv_memcpy_r(void *dest, const void *src, size_t count) {
 int v_cstruct_packs(char *buffer, size_t buffersize, const char *fmt, size_t argc, ...) {
     bool little_endian = true;
     char *tempbuf = buffer;
+    int array_len = 0;
 
     va_list args;
     va_start(args, argc);
@@ -49,47 +50,93 @@ int v_cstruct_packs(char *buffer, size_t buffersize, const char *fmt, size_t arg
                 break;
 
             case 'x':
-                CHECK_SIZE(1);
-                *tempbuf = '\0';
-                tempbuf++;
+                array_len = (array_len) ? (array_len) : (1);
+                CHECK_SIZE(array_len);
+                memset(tempbuf, 0, array_len);
+                tempbuf += array_len;
+                array_len = 0;
                 break;
 
-            case 'c': {
+            case 'c':
                 CHECK_ARGC();
-                CHECK_SIZE(1);
-                uint8_t cval = (uint8_t)va_arg(args, int);
-                *tempbuf = cval;
-                tempbuf++;
-            } break;
+                if (array_len) {
+                    CHECK_SIZE(array_len);
+                    uint8_t *cval = va_arg(args, uint8_t *);
+                    memcpy(tempbuf, cval, array_len);
+                    tempbuf += array_len;
+                } else {
+                    CHECK_SIZE(1);
+                    int cval = va_arg(args, int);
+                    printf(" char: %x\n", cval);
+                    *tempbuf = (uint8_t)cval;
+                    tempbuf++;
+                }
+                array_len = 0;
+                break;
 
-            case 'h': {
+            case 'h':
                 CHECK_ARGC();
-                CHECK_SIZE(1);
-                int hval = va_arg(args, int);
-                ENDIAN_MEMCPY(tempbuf, &hval, 2);
-                tempbuf += 2;
-            } break;
+                if (array_len) {
+                    uint16_t *hval = va_arg(args, uint16_t *);
+                    for (size_t i = 0; i < array_len; i++) {
+                        CHECK_SIZE(2);
+                        ENDIAN_MEMCPY(tempbuf, &hval[i], 4);
+                        tempbuf += 2;
+                    }
+                } else {
+                    CHECK_SIZE(1);
+                    int hval = va_arg(args, int);
+                    ENDIAN_MEMCPY(tempbuf, &hval, 2);
+                    tempbuf += 2;
+                }
+                array_len = 0;
+                break;
 
-            case 'i': {
+            case 'i':
                 CHECK_ARGC();
-                CHECK_SIZE(4);
-                int ival = va_arg(args, int);
-                ENDIAN_MEMCPY(tempbuf, &ival, 4);
-                tempbuf += 4;
-            }
-            break;
+                if (array_len) {
+                    int *ival = va_arg(args, int *);
+                    for (size_t i = 0; i < array_len; i++) {
+                        CHECK_SIZE(4);
+                        ENDIAN_MEMCPY(tempbuf, &ival[i], 4);
+                        tempbuf += 4;
+                    }
+                } else {
+                    CHECK_SIZE(4);
+                    int ival = va_arg(args, int);
+                    ENDIAN_MEMCPY(tempbuf, &ival, 4);
+                    tempbuf += 4;
+                }
+                array_len = 0;
+                break;
 
-            case 'l': {
+            case 'l':
                 CHECK_ARGC();
-                CHECK_SIZE(8);
-                long long llval = va_arg(args, long long);
-                ENDIAN_MEMCPY(tempbuf, &llval, 8);
-                tempbuf += 8;
-            }
-            break;
+                if (array_len) {
+                    long long *llval = va_arg(args, long long *);
+                    for (size_t i = 0; i < array_len; i++) {
+                        CHECK_SIZE(8);
+                        ENDIAN_MEMCPY(tempbuf, &llval[i], 8);
+                        tempbuf += 8;
+                    }
+                } else {
+                    CHECK_SIZE(8);
+                    long long llval = va_arg(args, long long);
+                    ENDIAN_MEMCPY(tempbuf, &llval, 8);
+                    tempbuf += 8;
+                }
+                array_len = 0;
+                break;
 
             default:
-                return -1;
+                // handle array length prefix
+                if (*fmt >= '0' && *fmt <= '9') {
+                    // cheesy atoi https://stackoverflow.com/a/868508
+                    array_len = array_len * 10 + (*fmt - '0');
+                } else {
+                    return -1;
+                }
+                break;
         }
         fmt++;
     }

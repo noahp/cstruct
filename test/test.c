@@ -24,7 +24,7 @@
 static void prv_print_hex(const char *prefix, const char *suffix, const char *buf, size_t len) {
     printf("%s [", prefix);
     for (size_t i = 0; i < len; i++) {
-        printf(" %02x", buf[i]);
+        printf(" %02x", (unsigned char)buf[i]);
     }
     printf(" ] %s", suffix);
 }
@@ -44,8 +44,8 @@ static int prv_ut_mem_equal(const char *expected, size_t expected_len, const cha
 
     if (i < expected_len) {
         printf(TEXT_RED("%s:%d  memcmp mismatch"), filename, line);
-        prv_print_hex(TEXT_RED_START "Expected: ", TEXT_END, expected, expected_len);
-        prv_print_hex(TEXT_RED_START "Actual: ", TEXT_END "\n", actual, actual_len);
+        prv_print_hex(TEXT_RED_START "Expected: ", TEXT_END "\n", expected, expected_len);
+        prv_print_hex(TEXT_RED_START "Actual:   ", TEXT_END "\n", actual, actual_len);
         return -1;
     }
     printf(TEXT_GREEN("%s:%d  memcmp passed"), filename, line);
@@ -70,6 +70,22 @@ int main(int argc, const char **argv) {
     packed = cstruct_packs(outbuf, sizeof(outbuf), "<cxi", 0x34, 0x12345678);
     UT_INT_EQUAL(6, packed);
     UT_MEM_EQUAL(test_case_1, sizeof(test_case_1) - 1, outbuf, packed);
+
+#define test_case_2 "\x12\x34\x12\x34\x56\x78"
+    packed = cstruct_packs(outbuf, sizeof(outbuf), ">hi", 0x1234, 0x12345678);
+    UT_INT_EQUAL(6, packed);
+    UT_MEM_EQUAL(test_case_2, sizeof(test_case_2) - 1, outbuf, packed);
+
+    packed = cstruct_packs(outbuf, sizeof(outbuf), "^>hi", 0x1234, 0x12345678);
+    UT_INT_EQUAL(-1, packed);
+
+    packed = cstruct_packs(outbuf, sizeof(outbuf), "<hii", 0x1234, 0x12345678);
+    UT_INT_EQUAL(-1, packed);
+
+#define test_case_3 "\x12\x34\x56\x78\x9a\xbc\xde\xf0\x0f\xed\xcb\xa9\x87\x65\x43\x21"
+    packed = cstruct_packs(outbuf, sizeof(outbuf), ">l<l", 0x123456789abcdef0ULL, 0x21436587a9cbed0fULL);
+    UT_INT_EQUAL(16, packed);
+    UT_MEM_EQUAL(test_case_3, sizeof(test_case_3) - 1, outbuf, packed);
 
 #define test_case_2 "\x12\x34\x12\x34\x56\x78"
     packed = cstruct_packs(outbuf, sizeof(outbuf), ">hi", 0x1234, 0x12345678);

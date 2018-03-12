@@ -1,7 +1,7 @@
 # cstruct Makefile
 
 INC = src
-CFLAGS += $(addprefix -I,$(INC)) -g -std=c99 -Wall -Wpedantic -Werror
+CFLAGS += $(addprefix -I,$(INC)) -g -std=c11 -Wall -Wpedantic -Werror
 LIBNAME = src/cstruct.o
 
 TEXT_RED = \033[31;1m

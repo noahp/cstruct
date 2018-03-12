@@ -79,6 +79,15 @@ int v_cstruct_packs(char *buffer, size_t buffersize, const char *fmt, size_t arg
             }
             break;
 
+            case 'l': {
+                CHECK_ARGC();
+                CHECK_SIZE(8);
+                long long llval = va_arg(args, long long);
+                ENDIAN_MEMCPY(tempbuf, &llval, 8);
+                tempbuf += 8;
+            }
+            break;
+
             default:
                 return -1;
         }

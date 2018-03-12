@@ -44,8 +44,7 @@ These characters in the format string can be used to specify packed endianness. 
 |c       |`char`     |1<sup>[1](#weirdChar)</sup>|
 |h       |`short`    |2                          |
 |i       |`int`      |4                          |
-|l       |`long`     |8                          |
-|q       |`long long`|16                         |
+|q       |`long long`|8                          |
 
 Note that signedness is irrelevant, so use the appropriate width for your type.
 

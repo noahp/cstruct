@@ -51,7 +51,7 @@ Note that signedness is irrelevant, so use the appropriate width for your type.
 *<a name="weirdChar">1</a>: Apologies to architectures with non-standard `char`, you'll need to select an appropriate width type if you want to support unpacking by casting.*
 
 ## repeat count -> array count
-Instead of effecting `4h` -> `hhhh` (requiring 4 positional args), `4h` instead indicates that the matching positional arg is an array of 4 `word` values.
+Instead of effecting `4h` -> `hhhh` (requiring 4 positional args), `4h` instead indicates that the matching positional arg is an array of 4 `short` values.
 
 # build
 Should work with any c99 compiler.

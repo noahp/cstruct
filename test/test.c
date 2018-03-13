@@ -105,9 +105,9 @@ int main(int argc, const char **argv) {
     UT_MEM_EQUAL(test_case_4, sizeof(test_case_4) - 1, outbuf, packed);
 
 // array only applies to attached element
-#define test_case_5 "\x12\x34\x54"
-    packed = cstruct_packs(outbuf, sizeof(outbuf), "2cc", "\x12\x34", 0x54);
-    UT_INT_EQUAL(3, packed);
+#define test_case_5 "\x12\x34\56\x78\x90\xab\xcd\xef\x01\x23\x45\x67\x54"
+    packed = cstruct_packs(outbuf, sizeof(outbuf), "12cc", "\x12\x34\56\x78\x90\xab\xcd\xef\x01\x23\x45\x67", 0x54);
+    UT_INT_EQUAL(13, packed);
     UT_MEM_EQUAL(test_case_5, sizeof(test_case_5) - 1, outbuf, packed);
 
     return 0;

@@ -10,16 +10,16 @@
 static void *prv_memcpy_r(void *dest, const void *src, size_t count) {
     size_t i;
     for (i = 0; count > 0; i++, count--) {
-        ((char *)dest)[i] = ((char *)src)[count - 1];
+        ((uint8_t *)dest)[i] = ((uint8_t *)src)[count - 1];
     }
-    ((char *)dest)[i] = ((char *)src)[0];
+    ((uint8_t *)dest)[i] = ((uint8_t *)src)[0];
 
     return dest;
 }
 
 int v_cstruct_packs(char *buffer, size_t buffersize, const char *fmt, size_t argc, ...) {
     bool little_endian = true;
-    char *tempbuf = buffer;
+    uint8_t *tempbuf = (uint8_t*)buffer;
     int array_len = 0;
 
     va_list args;
@@ -31,7 +31,7 @@ int v_cstruct_packs(char *buffer, size_t buffersize, const char *fmt, size_t arg
         return -1;     \
     }
 #define CHECK_SIZE(count)                        \
-    if (tempbuf + count > buffer + buffersize) { \
+    if (tempbuf + count > (uint8_t*)buffer + buffersize) { \
         goto done;                               \
     }
 
@@ -67,7 +67,7 @@ int v_cstruct_packs(char *buffer, size_t buffersize, const char *fmt, size_t arg
                 } else {
                     CHECK_SIZE(1);
                     int cval = va_arg(args, int);
-                    printf(" char: %x\n", cval);
+                    printf(" uint8_t: %x\n", cval);
                     *tempbuf = (uint8_t)cval;
                     tempbuf++;
                 }
@@ -79,15 +79,15 @@ int v_cstruct_packs(char *buffer, size_t buffersize, const char *fmt, size_t arg
                 if (array_len) {
                     uint16_t *hval = va_arg(args, uint16_t *);
                     for (size_t i = 0; i < array_len; i++) {
-                        CHECK_SIZE(2);
-                        ENDIAN_MEMCPY(tempbuf, &hval[i], 4);
-                        tempbuf += 2;
+                        CHECK_SIZE(sizeof(uint16_t));
+                        ENDIAN_MEMCPY(tempbuf, &hval[i], sizeof(*hval));
+                        tempbuf += sizeof(*hval);
                     }
                 } else {
                     CHECK_SIZE(1);
-                    int hval = va_arg(args, int);
-                    ENDIAN_MEMCPY(tempbuf, &hval, 2);
-                    tempbuf += 2;
+                    uint16_t hval = (uint16_t)va_arg(args, int);
+                    ENDIAN_MEMCPY(tempbuf, &hval, sizeof(hval));
+                    tempbuf += sizeof(hval);
                 }
                 array_len = 0;
                 break;
@@ -95,17 +95,17 @@ int v_cstruct_packs(char *buffer, size_t buffersize, const char *fmt, size_t arg
             case 'i':
                 CHECK_ARGC();
                 if (array_len) {
-                    int *ival = va_arg(args, int *);
+                    uint32_t *ival = va_arg(args, uint32_t *);
                     for (size_t i = 0; i < array_len; i++) {
-                        CHECK_SIZE(4);
-                        ENDIAN_MEMCPY(tempbuf, &ival[i], 4);
-                        tempbuf += 4;
+                        CHECK_SIZE(sizeof(uint32_t));
+                        ENDIAN_MEMCPY(tempbuf, &ival[i], sizeof(*ival));
+                        tempbuf += sizeof(*ival);
                     }
                 } else {
-                    CHECK_SIZE(4);
-                    int ival = va_arg(args, int);
-                    ENDIAN_MEMCPY(tempbuf, &ival, 4);
-                    tempbuf += 4;
+                    CHECK_SIZE(sizeof(uint32_t));
+                    uint32_t ival = va_arg(args, uint32_t);
+                    ENDIAN_MEMCPY(tempbuf, &ival, sizeof(ival));
+                    tempbuf += sizeof(ival);
                 }
                 array_len = 0;
                 break;
@@ -113,17 +113,17 @@ int v_cstruct_packs(char *buffer, size_t buffersize, const char *fmt, size_t arg
             case 'l':
                 CHECK_ARGC();
                 if (array_len) {
-                    long long *llval = va_arg(args, long long *);
+                    uint64_t *llval = va_arg(args, uint64_t *);
                     for (size_t i = 0; i < array_len; i++) {
-                        CHECK_SIZE(8);
-                        ENDIAN_MEMCPY(tempbuf, &llval[i], 8);
-                        tempbuf += 8;
+                        CHECK_SIZE(sizeof(uint64_t));
+                        ENDIAN_MEMCPY(tempbuf, &llval[i], sizeof(*llval));
+                        tempbuf += sizeof(*llval);
                     }
                 } else {
-                    CHECK_SIZE(8);
-                    long long llval = va_arg(args, long long);
-                    ENDIAN_MEMCPY(tempbuf, &llval, 8);
-                    tempbuf += 8;
+                    CHECK_SIZE(sizeof(uint64_t));
+                    uint64_t llval = va_arg(args, uint64_t);
+                    ENDIAN_MEMCPY(tempbuf, &llval, sizeof(llval));
+                    tempbuf += sizeof(llval);
                 }
                 array_len = 0;
                 break;
@@ -144,5 +144,5 @@ int v_cstruct_packs(char *buffer, size_t buffersize, const char *fmt, size_t arg
     va_end(args);
 
 done:
-    return tempbuf - buffer;
+    return tempbuf - (uint8_t*)buffer;
 }

@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <stdio.h>
-
 // copy, reversed
 static void *prv_memcpy_r(void *dest, const void *src, size_t count) {
     size_t i;
@@ -67,7 +65,6 @@ int v_cstruct_packs(char *buffer, size_t buffersize, const char *fmt, size_t arg
                 } else {
                     CHECK_SIZE(1);
                     int cval = va_arg(args, int);
-                    printf(" uint8_t: %x\n", cval);
                     *tempbuf = (uint8_t)cval;
                     tempbuf++;
                 }
